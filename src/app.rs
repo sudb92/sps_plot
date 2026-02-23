@@ -26,6 +26,7 @@ pub struct Reaction {
 
     pub ejectile_z: i32,
     pub ejectile_a: i32,
+    pub ejectile_qs: i32,
     pub ejectile_data: Option<NuclearData>,
 
     pub resid_z: i32,
@@ -137,6 +138,7 @@ impl Reaction {
         ui.label("Ejectile: ");
         ui.add(egui::DragValue::new(&mut self.ejectile_z).prefix("Z: "));
         ui.add(egui::DragValue::new(&mut self.ejectile_a).prefix("A: "));
+        ui.add(egui::DragValue::new(&mut self.ejectile_qs).prefix("QS: "));
 
         ui.separator();
 
@@ -189,7 +191,7 @@ impl Reaction {
             NuclearData::get_data(reaction.resid_z as u32, reaction.resid_a as u32);
 
         reaction.reaction_identifier = format!(
-            "{}({},{}){}",
+            "{}({},{}({}+)){}",
             reaction
                 .target_data
                 .as_ref()
@@ -202,6 +204,9 @@ impl Reaction {
                 .ejectile_data
                 .as_ref()
                 .map_or("None", |data| &data.isotope),
+            reaction
+                .ejectile_qs,
+                //.map_or("None", |data| &data.isotope),
             reaction
                 .resid_data
                 .as_ref()
@@ -473,7 +478,8 @@ impl SPSPlotApp {
             // convert ejectile ke to rho
             let p = (ejectile_energy * (ejectile_energy + 2.0 * ejectile.mass)).sqrt();
             let qbrho = p / QBRHO2P;
-            let rho = qbrho / (magnetic_field * ejectile.z as f64);
+            //let rho = qbrho / (magnetic_field * ejectile.z as f64);
+            let rho = qbrho / (magnetic_field * reaction.ejectile_qs as f64);
             info!("Excitation: {excitation}, rho: {rho}");
 
             reaction.rho_values.push((excitation, rho));
